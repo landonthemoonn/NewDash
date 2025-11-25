@@ -9,6 +9,7 @@ import { DollarSign, Plus, TrendingUp, TrendingDown, Receipt } from 'lucide-reac
 import { format } from 'date-fns';
 import { projectId, publicAnonKey } from '../utils/supabase/info.tsx';
 import { motion } from 'motion/react';
+import { toast } from 'sonner';
 
 interface Expense {
   id: string;
@@ -103,9 +104,11 @@ export function Financials({ session, supabase, devMode }: FinancialsProps) {
         setNewCategory('utilities');
         setDialogOpen(false);
         await fetchExpenses();
+        toast.success('Expense added successfully!');
       }
     } catch (error) {
       console.error('Error adding expense:', error);
+      toast.error('Failed to add expense.');
     }
   };
 

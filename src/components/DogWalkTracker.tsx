@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Dog, Clock, User, Plus, Calendar } from 'lucide-react';
+import { Dog, Clock, User, Plus, Calendar, Trash2 } from 'lucide-react';
 import { format, formatDistanceToNow, addHours } from 'date-fns';
 import { projectId, publicAnonKey } from '../utils/supabase/info.tsx';
 import { motion } from 'motion/react';
+import { toast } from 'sonner';
 
 interface Walk {
   id: string;
@@ -74,6 +76,7 @@ export function DogWalkTracker({ session, supabase, devMode }: DogWalkTrackerPro
       
       if (!currentSession) {
         console.error('No active session');
+        toast.error('Please sign in to log walks');
         return;
       }
 
@@ -91,9 +94,13 @@ export function DogWalkTracker({ session, supabase, devMode }: DogWalkTrackerPro
 
       if (response.ok) {
         await fetchWalks();
+        toast.success(`${duration} minute walk logged! 🐕`);
+      } else {
+        throw new Error('Failed to log walk');
       }
     } catch (error) {
       console.error('Error adding walk:', error);
+      toast.error('Failed to log walk. Please try again.');
     } finally {
       setAdding(false);
     }
@@ -107,6 +114,7 @@ export function DogWalkTracker({ session, supabase, devMode }: DogWalkTrackerPro
       
       if (!currentSession) {
         console.error('No active session');
+        toast.error('Please sign in to log walks');
         return;
       }
 
@@ -131,15 +139,19 @@ export function DogWalkTracker({ session, supabase, devMode }: DogWalkTrackerPro
 
       if (response.ok) {
         await fetchWalks();
+        toast.success(`Walk logged for ${customWalker}! 🐕`);
         // Reset form
         setCustomWalker('');
         setCustomDuration('');
         setCustomDate(format(new Date(), 'yyyy-MM-dd'));
         setCustomTime(format(new Date(), 'HH:mm'));
         setDialogOpen(false);
+      } else {
+        throw new Error('Failed to log walk');
       }
     } catch (error) {
       console.error('Error adding custom walk:', error);
+      toast.error('Failed to log walk. Please try again.');
     } finally {
       setAdding(false);
     }

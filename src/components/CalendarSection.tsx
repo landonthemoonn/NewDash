@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { CalendarDays, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, RefreshCw, AlertCircle } from 'lucide-react';
 import { format, addDays, subDays, startOfDay, parseISO } from 'date-fns';
+import { toast } from 'sonner@2.0.3';
+import { Alert, AlertDescription } from './ui/alert';
 
 interface CalendarEvent {
   id: string;
@@ -28,15 +30,18 @@ export function CalendarSection({ session, supabase, devMode }: CalendarSectionP
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchGoogleCalendarEvents = async () => {
     if (devMode || !session?.provider_token) {
       setEvents([]);
+      setError(devMode ? null : 'Google Calendar not connected. Please sign in again to enable calendar sync.');
       return;
     }
 
     try {
       setLoading(true);
+      setError(null);
       const dayStart = startOfDay(currentDate).toISOString();
       const dayEnd = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), 23, 59, 59).toISOString();
 
@@ -49,12 +54,27 @@ export function CalendarSection({ session, supabase, devMode }: CalendarSectionP
         }
       );
 
-      if (response.ok) {
+      if (response.status === 401) {
+        // Token expired - need to re-authenticate
+        setError('Your Google Calendar access has expired. Please sign out and sign in again to refresh access.');
+        toast.error('Calendar access expired', {
+          description: 'Please sign out and sign in again to refresh your calendar connection.',
+          duration: 5000,
+        });
+        setEvents([]);
+      } else if (response.ok) {
         const data = await response.json();
         setEvents(data.items || []);
+        if (data.items && data.items.length > 0) {
+          toast.success(`Loaded ${data.items.length} event${data.items.length !== 1 ? 's' : ''}`);
+        }
+      } else {
+        throw new Error(`Failed to fetch calendar: ${response.status}`);
       }
     } catch (error) {
       console.error('Error fetching calendar events:', error);
+      setError('Unable to load calendar events. Check your internet connection.');
+      toast.error('Failed to load calendar events');
     } finally {
       setLoading(false);
     }
@@ -163,6 +183,13 @@ export function CalendarSection({ session, supabase, devMode }: CalendarSectionP
             </div>
           )}
         </div>
+
+        {error && (
+          <Alert className="mt-4">
+            <AlertCircle className="h-4 w-4 mr-2" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
         {devMode && (
           <div className="text-xs text-muted-foreground pt-2 border-t">

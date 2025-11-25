@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -9,6 +10,7 @@ import { CheckCircle2, Circle, ListTodo, Plus, RotateCw, Trash2 } from 'lucide-r
 import { format } from 'date-fns';
 import { projectId, publicAnonKey } from '../utils/supabase/info.tsx';
 import { motion } from 'motion/react';
+import { toast } from 'sonner';
 
 interface Chore {
   id: string;
@@ -100,9 +102,11 @@ export function Chores({ session, supabase, devMode }: ChoresProps) {
         setNewFrequency('weekly');
         setDialogOpen(false);
         await fetchChores();
+        toast.success('Chore added successfully!');
       }
     } catch (error) {
       console.error('Error adding chore:', error);
+      toast.error('Failed to add chore.');
     }
   };
 
@@ -126,9 +130,11 @@ export function Chores({ session, supabase, devMode }: ChoresProps) {
 
       if (response.ok) {
         await fetchChores();
+        toast.success('Chore updated successfully!');
       }
     } catch (error) {
       console.error('Error toggling chore:', error);
+      toast.error('Failed to update chore.');
     }
   };
 
@@ -150,9 +156,11 @@ export function Chores({ session, supabase, devMode }: ChoresProps) {
 
       if (response.ok) {
         await fetchChores();
+        toast.success('Chore deleted successfully!');
       }
     } catch (error) {
       console.error('Error deleting chore:', error);
+      toast.error('Failed to delete chore.');
     }
   };
 
@@ -174,9 +182,11 @@ export function Chores({ session, supabase, devMode }: ChoresProps) {
 
       if (response.ok) {
         await fetchChores();
+        toast.success('Chores rotated successfully!');
       }
     } catch (error) {
       console.error('Error rotating chores:', error);
+      toast.error('Failed to rotate chores.');
     }
   };
 

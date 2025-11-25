@@ -4,6 +4,7 @@ import { LoginScreen } from './components/LoginScreen';
 import { Dashboard } from './components/Dashboard';
 import { projectId, publicAnonKey } from './utils/supabase/info.tsx';
 import { motion } from 'motion/react';
+import { Toaster } from './components/ui/sonner';
 
 const supabase = createClient(
   `https://${projectId}.supabase.co`,
@@ -123,6 +124,7 @@ export default function App() {
       transition={{ duration: 0.3 }}
     >
       <Dashboard session={session} supabase={supabase} onLogout={handleLogout} devMode={DEV_MODE} />
+      <Toaster position="top-right" theme="dark" />
     </motion.div>
   );
 }

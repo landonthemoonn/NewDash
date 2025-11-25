@@ -3,11 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import { Progress } from './ui/progress';
 import { MessageSquare, Plus, X, ChevronRight, ChevronLeft, Check, Smile, Meh, Frown } from 'lucide-react';
 import { format } from 'date-fns';
 import { projectId, publicAnonKey } from '../utils/supabase/info.tsx';
 import { motion, AnimatePresence } from 'motion/react';
+import { toast } from 'sonner';
 
 interface CheckIn {
   id: string;
@@ -118,6 +120,7 @@ export function CheckIns({ session, supabase, devMode }: CheckInsProps) {
       
       if (!currentSession) {
         console.error('No active session');
+        toast.error('Please sign in to submit check-ins');
         return;
       }
 
@@ -156,9 +159,13 @@ export function CheckIns({ session, supabase, devMode }: CheckInsProps) {
         setCurrentStep(0);
         setDialogOpen(false);
         await fetchCheckIns();
+        toast.success('Weekly check-in submitted! 💬');
+      } else {
+        throw new Error('Failed to submit check-in');
       }
     } catch (error) {
       console.error('Error submitting guided check-in:', error);
+      toast.error('Failed to submit check-in. Please try again.');
     } finally {
       setAdding(false);
     }
@@ -203,9 +210,13 @@ export function CheckIns({ session, supabase, devMode }: CheckInsProps) {
 
       if (response.ok) {
         await fetchCheckIns();
+        toast.success('Check-in deleted');
+      } else {
+        throw new Error('Failed to delete check-in');
       }
     } catch (error) {
       console.error('Error deleting check-in:', error);
+      toast.error('Failed to delete check-in');
     }
   };
 
